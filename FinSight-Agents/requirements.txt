@@ -1,14 +1,37 @@
-Flask
-google-cloud-bigquery
-google-cloud-aiplatform
-pandas
-numpy
-requests
-beautifulsoup4
-plotly
-scikit-learn
-pytest
-jupyter
-adk
-openai
-python-dotenv
+# Google Cloud Ecosystem
+google-cloud-bigquery>=3.0
+google-cloud-storage>=2.0
+google-cloud-aiplatform>=1.25  # For Vertex AI
+google-api-python-client>=2.0  # For general Google APIs
+
+# Data Processing
+pandas>=2.0
+numpy>=1.24
+pyarrow>=10.0  # For BigQuery compatibility
+
+# API Clients
+yfinance>=0.2  # For market data (alternative to paid APIs)
+requests>=2.28  # For API calls
+aiohttp>=3.8  # For async HTTP requests
+
+# Natural Language Processing
+nltk>=3.8
+vaderSentiment>=3.3  # For sentiment analysis
+transformers>=4.30  # If using HuggingFace models
+
+# Visualization
+plotly>=5.14
+dash>=2.9  # If building interactive dashboards
+looker-sdk>=22.0  # If using Looker
+
+# Development Utilities
+pytest>=7.3
+pytest-asyncio>=0.21  # For async tests
+pytest-cov>=4.0  # Test coverage
+mypy>=1.3  # Type checking
+black>=23.3  # Code formatting
+flake8>=6.0  # Linting
+
+# Documentation
+mkdocs>=1.4
+mkdocs-material>=9.1

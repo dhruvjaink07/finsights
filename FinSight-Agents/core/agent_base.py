@@ -1,27 +1,24 @@
-class AgentBase:
-    def __init__(self, name):
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+import logging
+from typing import Any, Dict, Optional
+
+@dataclass
+class AgentResult:
+    success: bool
+    data: Any
+    error: Optional[str] = None
+
+class BaseAgent(ABC):
+    def __init__(self, name: str):
         self.name = name
-        self.is_active = True
+        self.logger = logging.getLogger(f"Agent.{name}")
 
-    def start(self):
-        """Start the agent's operations."""
-        if not self.is_active:
-            self.is_active = True
-            print(f"{self.name} has started.")
+    @abstractmethod
+    async def execute(self, task: Dict) -> AgentResult:
+        """All agents must implement this async execute method"""
+        pass
 
-    def stop(self):
-        """Stop the agent's operations."""
-        if self.is_active:
-            self.is_active = False
-            print(f"{self.name} has stopped.")
-
-    def process(self, data):
-        """Process the incoming data. This method should be overridden by subclasses."""
-        raise NotImplementedError("Subclasses must implement this method.")
-
-    def get_status(self):
-        """Return the current status of the agent."""
-        return {
-            "name": self.name,
-            "is_active": self.is_active
-        }
+    async def health_check(self) -> bool:
+        """Default health check implementation"""
+        return True

@@ -1,23 +1,56 @@
-# FinSight Agents Main Entry Point
-
+import asyncio
 from agents.supervisor_agent import SupervisorAgent
+from agents.market_data_agent import MarketDataAgent
+from agents.sentiment_agent import SentimentAgent
+from agents.insight_agent import InsightAgent
 
-class DummyAgent:
-    def __init__(self, name):
-        self.name = name
+# Dummy classes for testing
+class DummyNewsFetcher:
+    def get_news(self, query, num_articles):
+        return [{"title": "Dummy News", "content": "Market is up!"}]
 
-    def run(self, input_data=None):
-        print(f"[{self.name}] Running...")
-        return f"{self.name} result"
+class DummySentimentAnalyzer:
+    def analyze(self, content):
+        return "positive"
+
+async def main():
+    # Initialize agents
+    supervisor = SupervisorAgent()
+    supervisor.register_agent(MarketDataAgent())
+    supervisor.register_agent(
+        SentimentAgent(DummyNewsFetcher(), DummySentimentAnalyzer())
+    )
+    supervisor.register_agent(InsightAgent(None, None))  # Pass dummy args if needed
+
+    # Define workflow
+    workflow = [
+        {
+            "agent_name": "MarketDataAgent",
+            "task_type": "fetch_top_stocks",
+            "parameters": {"count": 10},
+            "priority": 1,
+            "retries": 2
+        },
+        {
+            "agent_name": "SentimentAgent",
+            "task_type": "analyze_news",
+            "parameters": {"symbols": "{{MarketDataAgent.result}}"},
+            "priority": 2
+        },
+        {
+            "agent_name": "InsightAgent",
+            "task_type": "generate_summary",
+            "parameters": {
+                "market_data": "{{MarketDataAgent.result}}",
+                "sentiment": "{{SentimentAgent.result}}"
+            },
+            "priority": 3
+        }
+    ]
+
+    # Execute workflow
+    results = await supervisor.execute_workflow(workflow)
+    print("Workflow results:", results)
 
 if __name__ == "__main__":
-    # Create SupervisorAgent with mock agents
-    supervisor = SupervisorAgent(sub_agents=[
-        DummyAgent("MarketDataAgent"),
-        DummyAgent("SentimentAgent"),
-        DummyAgent("InsightAgent")
-    ])
-
-    # Run the full workflow
-    result = supervisor.run()
-    print("✅ Final Output:", result)
+    asyncio.run(main())

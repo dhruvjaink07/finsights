@@ -1,13 +1,14 @@
-class SentimentAgent:
+from core.agent_base import BaseAgent, AgentResult
+
+class SentimentAgent(BaseAgent):
     def __init__(self, news_fetcher, sentiment_analyzer):
+        super().__init__("SentimentAgent")
         self.news_fetcher = news_fetcher
         self.sentiment_analyzer = sentiment_analyzer
 
-    def fetch_news(self, query, num_articles=10):
-        articles = self.news_fetcher.get_news(query, num_articles)
-        return articles
-
-    def analyze_sentiment(self, articles):
+    async def execute(self, task):
+        query = task['parameters'].get('query', 'AAPL')
+        articles = self.news_fetcher.get_news(query, 10)
         sentiments = []
         for article in articles:
             sentiment = self.sentiment_analyzer.analyze(article['content'])
@@ -15,9 +16,4 @@ class SentimentAgent:
                 'title': article['title'],
                 'sentiment': sentiment
             })
-        return sentiments
-
-    def run(self, query):
-        articles = self.fetch_news(query)
-        sentiments = self.analyze_sentiment(articles)
-        return sentiments
+        return AgentResult(success=True, data=sentiments)
