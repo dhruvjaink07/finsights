@@ -23,3 +23,10 @@ class MarketDataAgent(BaseAgent):
     async def _fetch_top_stocks(self, count: int):
         # Implementation using your BigQuery helpers
         pass
+
+    def _clean_data(raw_data: Dict) -> dict:
+        return {
+            'symbol': raw_data['Symbol'],
+            'date': raw_data['Date'].isoformat(),
+            'close': round(raw_data['Close'], 2)
+        }
