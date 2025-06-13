@@ -1,8 +1,19 @@
 # FinSight Agents 🧠📈
 
-Multi-Agent Financial Insight System powered by Google Cloud + ADK
+**Multi-Agent Financial Insight System powered by Google Cloud + ADK**
 
 A collaborative multi-agent system that fetches real-time market data, analyzes trends, evaluates sentiment from news, and produces actionable financial insights. Built with the Agent Development Kit (ADK) and integrated with Google Cloud services like BigQuery and Vertex AI.
+
+---
+
+## 🚀 Project Overview
+
+FinSight Agents automates the process of extracting and synthesizing financial insights by:
+
+- Collecting live market data (stocks, Indian and global)
+- Scoring real-time sentiment from financial news
+- Running analytics and indicators
+- Generating AI-powered summaries and charts
 
 ---
 
@@ -10,115 +21,137 @@ A collaborative multi-agent system that fetches real-time market data, analyzes 
 
 In the fast-paced world of financial markets, extracting and synthesizing data-driven insights requires significant time and expertise. Investors and analysts often juggle data from multiple sources — prices, indicators, news, and reports — which slows down decision-making.
 
-FinSight Agents automates this process using a multi-agent system that:
-
-* Collects live market data
-* Scores real-time sentiment from financial news
-* Runs financial analytics and indicators
-* Generates AI-powered summaries and charts
-
 ---
 
-## 🚀 How It Works
+## 🏗️ Architecture
 
-The system is orchestrated through the Agent Development Kit (ADK), where each agent plays a specialized role in the pipeline:
-
-| Agent                            | Role                                                              |
-| -------------------------------- | ----------------------------------------------------------------- |
-| 🧠 SupervisorAgent               | Orchestrates all other agents                                     |
-| 📊 MarketDataAgent               | Fetches real-time stock prices and indicators, stores in BigQuery |
-| 🗞️ SentimentAgent               | Analyzes latest news sentiment using Gemini or VADER              |
-| 📈 InsightAgent                  | Synthesizes outputs from data + sentiment into insights           |
-| 📉 VisualizationAgent (Optional) | Generates graphs using Plotly or Looker                           |
+| Agent                       | Role                                                                 |
+|-----------------------------|----------------------------------------------------------------------|
+| 🧠 SupervisorAgent           | Orchestrates all other agents                                        |
+| 📊 MarketDataAgent           | Fetches real-time stock prices (via yfinance), formats for BigQuery  |
+| 🗞️ SentimentAgent            | Analyzes latest news sentiment using NewsAPI + VADER (or Gemini)     |
+| 📈 InsightAgent              | Synthesizes outputs from data + sentiment into insights              |
+| 📉 VisualizationAgent (Opt.) | Generates graphs using Plotly or Looker                              |
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Tool                        | Purpose                       |
-| --------------------------- | ----------------------------- |
-| Agent Development Kit (ADK) | Multi-agent orchestration     |
-| Python                      | Agent implementation          |
-| BigQuery                    | Data storage and querying     |
-| Vertex AI / Gemini          | LLM-driven summaries          |
-| Plotly / Looker Studio      | Charts and dashboards         |
-| Google Search API           | For real-time news collection |
+- **Python** (asyncio, pandas, requests, etc.)
+- **Agent Development Kit (ADK)** for agent orchestration
+- **Google Cloud BigQuery** (Sandbox, CSV upload)
+- **yfinance** for market data
+- **NewsAPI** for news headlines
+- **VADER / NLTK** for sentiment analysis
+- **Plotly** for visualization
+- **python-dotenv** for secrets management
 
 ---
 
 ## 📂 Project Structure
 
-```bash
+```
 FinSight-Agents/
 │
-├── agents/
+├── main.py                      # Entry point: runs SupervisorAgent and workflow
+├── requirements.txt             # Python dependencies
+├── .env                         # Secrets (API keys, not in git)
+│
+├── agents/                      # All agent classes
 │   ├── supervisor_agent.py
 │   ├── market_data_agent.py
 │   ├── sentiment_agent.py
 │   ├── insight_agent.py
+│   └── visualization_agent.py
 │
-├── utils/
-│   └── bigquery_helpers.py
+├── core/                        # Agent base classes and pipeline logic
+│
+├── utils/                       # Helper modules (BigQuery, yfinance, news, etc.)
 │
 ├── data/
-│   └── raw_stock_data.csv
+│   ├── processed/               # Output CSVs (e.g., stock_data.csv, news_sample.csv)
+│   └── schemas/                 # BigQuery table schemas (JSON)
 │
-├── main.py
-├── requirements.txt
+├── notebooks/                   # Jupyter notebooks and scripts for testing
+│
+├── tests/                       # Unit tests
+│
 └── README.md
 ```
 
 ---
 
-## 🧪 Setup Instructions
+## ⚡ Quickstart
 
-1. Clone the repository:
+1. **Clone the repo and install dependencies**
+    ```sh
+    git clone <repo-url>
+    cd FinSight-Agents
+    pip install -r requirements.txt
+    ```
 
-```bash
-git clone https://github.com/<your-username>/finsight-agents.git
-cd finsight-agents
-```
+2. **Set up your `.env` file**
+    ```
+    NEWSAPI_KEY=your_newsapi_key_here
+    ```
 
-2. Create a virtual environment:
+3. **Fetch and save stock/news data**
+    ```sh
+    python notebooks/init_bigquery.py      # Fetches stock data, saves as CSV
+    python notebooks/save_news_sample.py   # Fetches news, saves as CSV
+    ```
 
-```bash
-python -m venv env
-source env/bin/activate  # or .\env\Scripts\activate on Windows
-```
+4. **Upload CSVs to BigQuery (Sandbox)**
+    - Go to [BigQuery Console](https://console.cloud.google.com/bigquery)
+    - Create dataset/table if needed
+    - Upload CSVs via the web UI
 
-3. Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-4. Set up Google Cloud credentials for BigQuery & Gemini (if used).
-
----
-
-## 💡 Example Output
-
-“Tesla dropped 4.2% in the last 3 days, with negative sentiment in the media due to layoffs. RSI indicates oversold. Recommendation: wait for reversal pattern.”
-
-(Visual charts + AI-generated summary shown in demo)
+5. **Run the agent workflow**
+    ```sh
+    python main.py
+    ```
 
 ---
 
-## 🎥 Demo
+## 🧪 Testing
 
-Link: \[YouTube/Vimeo demo link here]
-
----
-
-## 🧑‍💻 Team Members
-
-* Dhruv Jain – SupervisorAgent, GitHub & ADK architecture
-* Tanish – Market Data + BigQuery
-* Fawaz – Sentiment Agent + Testing
-* Tahab – Insight Agent + Docs + Dashboard
+- Run all tests:
+    ```sh
+    pytest tests/
+    ```
 
 ---
 
-## 📜 License
+## 📝 Contributing
 
-MIT License
+- Add new agents or tools in the appropriate folders.
+- Use `.env` for all secrets and API keys.
+- Write or update tests for new features.
+- Document your changes in the README or as docstrings.
+
+---
+
+## 📅 Hackathon Timeline
+
+- **June 11–13:** MarketDataAgent, BigQuery integration, news fetcher, agent scaffolding
+- **June 14:** SentimentAgent (news + sentiment analysis)
+- **June 15+:** InsightAgent, visualization, error handling, demo, docs
+
+---
+
+## 📈 Next Steps
+
+- Integrate real sentiment analysis (VADER, Gemini, etc.) in SentimentAgent
+- Expand workflow and agent capabilities
+- Add more visualizations and dashboards
+- Polish documentation and prepare for demo/submission
+
+---
+
+## 🙌 Team
+
+- Dhruv, Tanish, Fawaz, Tahab
+
+---
+
+**Let’s build the future of financial insights, together!**

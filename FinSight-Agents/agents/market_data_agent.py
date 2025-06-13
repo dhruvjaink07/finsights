@@ -1,12 +1,13 @@
 from typing import Dict
 from core.agent_base import BaseAgent, AgentResult
-from utils.bigquery_helpers import BigQueryClient
+# from utils.bigquery_helpers import BigQueryClient  # Unused for now
+from utils.yfinance_helper import fetch_stock_data  # <-- Import yfinance helper
 import asyncio
 
 class MarketDataAgent(BaseAgent):
     def __init__(self):
         super().__init__("MarketDataAgent")
-        self.bq_client = BigQueryClient()
+        # self.bq_client = BigQueryClient()  # Commented: not used in live fetch
 
     async def execute(self, task: Dict) -> AgentResult:
         task_type = task['task_type']
@@ -21,8 +22,14 @@ class MarketDataAgent(BaseAgent):
             return AgentResult(success=False, data=None, error=str(e))
 
     async def _fetch_top_stocks(self, count: int):
-        # Implementation using your BigQuery helpers
-        pass
+        # Example: fetch top N Indian stocks (customize as needed)
+        symbols = ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS"][:count]
+        data = fetch_stock_data(symbols)
+        return data
+
+    # def _fetch_top_stocks_from_bigquery(self, count: int):
+    #     # Implementation using your BigQuery helpers (for future use)
+    #     pass
 
     def _clean_data(raw_data: Dict) -> dict:
         return {

@@ -3,6 +3,7 @@ google-cloud-bigquery>=3.0
 google-cloud-storage>=2.0
 google-cloud-aiplatform>=1.25  # For Vertex AI
 google-api-python-client>=2.0  # For general Google APIs
+google-generativeai
 
 # Data Processing
 pandas>=2.0
