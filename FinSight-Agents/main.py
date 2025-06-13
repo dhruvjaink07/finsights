@@ -3,12 +3,9 @@ from agents.supervisor_agent import SupervisorAgent
 from agents.market_data_agent import MarketDataAgent
 from agents.sentiment_agent import SentimentAgent
 from agents.insight_agent import InsightAgent
+from utils.news_fetcher import NewsFetcherAdapter
 
 # Dummy classes for testing
-class DummyNewsFetcher:
-    def get_news(self, query, num_articles):
-        return [{"title": "Dummy News", "content": "Market is up!"}]
-
 class DummySentimentAnalyzer:
     def analyze(self, content):
         return "positive"
@@ -18,7 +15,7 @@ async def main():
     supervisor = SupervisorAgent()
     supervisor.register_agent(MarketDataAgent())
     supervisor.register_agent(
-        SentimentAgent(DummyNewsFetcher(), DummySentimentAnalyzer())
+        SentimentAgent(NewsFetcherAdapter(), DummySentimentAnalyzer())
     )
     supervisor.register_agent(InsightAgent(None, None))  # Pass dummy args if needed
 

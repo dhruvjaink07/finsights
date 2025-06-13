@@ -51,7 +51,11 @@ def fetch_and_process_news(query, num_articles=5):
         for a in articles
     ]
 
-if __name__ == "__main__":
-    news = fetch_and_process_news("RELIANCE", num_articles=3)
-    for article in news:
-        print(article)
+class NewsFetcherAdapter:
+    def get_news(self, query, num_articles):
+        return fetch_and_process_news(query, num_articles)
+
+# if __name__ == "__main__":
+#     news = fetch_and_process_news("RELIANCE", num_articles=3)
+#     for article in news:
+#         print(article)
