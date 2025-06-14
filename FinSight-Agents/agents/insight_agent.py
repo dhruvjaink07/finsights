@@ -1,5 +1,5 @@
 from core.agent_base import BaseAgent, AgentResult
-from utils.gemini_helpers import get_gemini_insight
+from utils.gemini_helpers import get_gemini_insight_async
 
 TICKER_TO_COMPANY = {
     "RELIANCE.NS": "Reliance",
@@ -42,6 +42,9 @@ class InsightAgent(BaseAgent):
         sentiment_data = task['parameters'].get('sentiment', {})
 
         insights = []
+        prompts = []
+        insight_meta = []
+
         ticker_to_company = {}
         if market_data and isinstance(market_data, list) and len(market_data) > 0:
             first_row = market_data[0]
@@ -110,12 +113,8 @@ class InsightAgent(BaseAgent):
                 f"Top Headline: {top_headline}\n"
                 f"Based on this data, provide a one-sentence actionable insight for an investor, including any risks or uncertainties."
             )
-            try:
-                llm_insight = get_gemini_insight(prompt)
-            except Exception as e:
-                llm_insight = f"LLM insight unavailable: {e}"
-
-            insights.append({
+            prompts.append(prompt)
+            insight_meta.append({
                 "ticker": ticker,
                 "company": company,
                 "latest_close": close_price,
@@ -127,8 +126,17 @@ class InsightAgent(BaseAgent):
                 "headline_count": len(sentiments),
                 "recommendation": recommendation,
                 "divergence_flag": divergence_flag,
-                "top_headline": top_headline,
-                "llm_insight": llm_insight
+                "top_headline": top_headline
             })
 
-        return AgentResult(success=True, data=insights)
+        # Asynchronous batch processing for Gemini insights
+        if prompts:
+            try:
+                llm_insights = await get_gemini_insight_async(prompts)
+                for i, insight in enumerate(llm_insights):
+                    insight_meta[i]["llm_insight"] = insight
+            except Exception as e:
+                for i in range(len(prompts)):
+                    insight_meta[i]["llm_insight"] = f"LLM insight unavailable: {e}"
+
+        return AgentResult(success=True, data=insight_meta)
