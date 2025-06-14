@@ -1,7 +1,12 @@
 import os
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import warnings
+
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 try:
     import mplfinance as mpf
@@ -19,7 +24,7 @@ class VisualizationAgent:
         plot_data = data.copy()
         if sort:
             plot_data = plot_data.sort_values(by=y, ascending=False)
-        ax = sns.barplot(data=plot_data, x=x, y=y, palette=palette)
+        ax = sns.barplot(data=plot_data, x=x, y=y, hue=x, palette=palette, legend=False)
         plt.title(title or f"{y} by {x}")
         plt.ylabel(y)
         plt.xlabel(x)
