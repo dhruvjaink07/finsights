@@ -8,12 +8,13 @@ A collaborative multi-agent system that fetches real-time market data, analyzes 
 
 ## 🚀 Project Overview
 
-FinSight Agents automates the process of extracting and synthesizing financial insights by:
+FinSight Agents is a robust, extensible multi-agent system that automates financial insight generation by:
 
-- Collecting live market data (stocks, Indian and global)
-- Scoring real-time sentiment from financial news
-- Running analytics and indicators
-- Generating AI-powered summaries and charts
+- Collecting live market data for any mix of Indian and global stocks
+- Dynamically extracting and passing ticker symbols between agents
+- Scoring real-time sentiment from financial news using company names
+- Synthesizing actionable insights for every stock, even if no news is found
+- Generating clear, company-wise summaries and (optionally) visualizations
 
 ---
 
@@ -27,11 +28,15 @@ In the fast-paced world of financial markets, extracting and synthesizing data-d
 
 | Agent                       | Role                                                                 |
 |-----------------------------|----------------------------------------------------------------------|
-| 🧠 SupervisorAgent           | Orchestrates all other agents                                        |
-| 📊 MarketDataAgent           | Fetches real-time stock prices (via yfinance), formats for BigQuery  |
+| 🧠 SupervisorAgent           | Orchestrates all other agents and resolves dependencies dynamically  |
+| 📊 MarketDataAgent           | Fetches real-time stock prices (via yfinance) for any tickers        |
 | 🗞️ SentimentAgent            | Analyzes latest news sentiment using NewsAPI + VADER (or Gemini)     |
-| 📈 InsightAgent              | Synthesizes outputs from data + sentiment into insights              |
+| 📈 InsightAgent              | Aggregates market and sentiment data into per-stock insights         |
 | 📉 VisualizationAgent (Opt.) | Generates graphs using Plotly or Looker                              |
+
+- **Dynamic symbol extraction:** The workflow automatically extracts tickers from market data and passes them to downstream agents.
+- **Global & Indian stock support:** Add or remove any tickers in one place; the pipeline adapts automatically.
+- **Graceful handling:** If no news is found for a stock, the system still generates an insight with "No news".
 
 ---
 
@@ -141,10 +146,10 @@ FinSight-Agents/
 
 ## 📈 Next Steps
 
-- Integrate real sentiment analysis (VADER, Gemini, etc.) in SentimentAgent
-- Expand workflow and agent capabilities
+- Enhance InsightAgent with more advanced analytics or recommendations
+- Integrate additional data sources or indicators
 - Add more visualizations and dashboards
-- Polish documentation and prepare for demo/submission
+- Expand test coverage and polish documentation for demo/submission
 
 ---
 

@@ -58,6 +58,7 @@ async def run_workflow(supervisor, workflow):
         print(f"{agent_name} result:", result.data)
 
     print_sentiment_results(results["SentimentAgent"].data)
+    print_insight_results(results["InsightAgent"].data)
 
 def print_sentiment_results(sentiment_data):
     for company, articles in sentiment_data.items():
@@ -69,6 +70,15 @@ def print_sentiment_results(sentiment_data):
             print(f"Headline: {art['headline']}")
             print(f"  Sentiment: {art['sentiment']} (score: {art['score']})")
             print("-" * 40)
+
+def print_insight_results(insight_data):
+    insight_result = insight_data
+    print("\n=== Insights ===")
+    for insight in insight_result:
+        print(f"{insight['company']} ({insight['ticker']}):")
+        print(f"  Latest Close: {insight['latest_close']}")
+        print(f"  Overall Sentiment: {insight['overall_sentiment']} (from {insight['headline_count']} headlines)")
+        print("-" * 40)
 
 async def main():
     supervisor = SupervisorAgent()
