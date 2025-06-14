@@ -21,9 +21,11 @@ vaderSentiment>=3.3  # For sentiment analysis
 transformers>=4.30  # If using HuggingFace models
 
 # Visualization
-plotly>=5.14
+# plotly>=5.14
 dash>=2.9  # If building interactive dashboards
 looker-sdk>=22.0  # If using Looker
+matlpotlib>=3.7  # For static plots
+seaborn>=0.12  # For statistical data visualization
 
 # Development Utilities
 pytest>=7.3

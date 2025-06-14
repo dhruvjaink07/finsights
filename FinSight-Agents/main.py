@@ -2,9 +2,11 @@ from agents.supervisor_agent import SupervisorAgent
 from agents.market_data_agent import MarketDataAgent
 from agents.sentiment_agent import SentimentAgent
 from agents.insight_agent import InsightAgent
+from agents.visualization_agent import VisualizationAgent
 from utils.news_fetcher import NewsFetcherAdapter
 import asyncio
 import copy
+import pandas as pd
 
 async def run_workflow(supervisor, workflow):
     results = {}
@@ -58,7 +60,7 @@ async def run_workflow(supervisor, workflow):
         print(f"{agent_name} result:", result.data)
 
     print_sentiment_results(results["SentimentAgent"].data)
-    print_insight_results(results["InsightAgent"].data)
+    print_insight_results(results["InsightAgent"].data, visualization_agent)
 
 def print_sentiment_results(sentiment_data):
     for company, articles in sentiment_data.items():
@@ -71,7 +73,7 @@ def print_sentiment_results(sentiment_data):
             print(f"  Sentiment: {art['sentiment']} (score: {art['score']})")
             print("-" * 40)
 
-def print_insight_results(insight_data):
+def print_insight_results(insight_data, visualization_agent):
     print("\n=== Insights ===")
     for insight in insight_data:
         print(f"{insight['company']} ({insight['ticker']}):")
@@ -89,6 +91,17 @@ def print_insight_results(insight_data):
         print(f"  Gemini Insight: {insight.get('llm_insight', '')}")
         print("-" * 40)
 
+    # --- Visualization ---
+    df = pd.DataFrame(insight_data)
+    visualization_agent.bar_chart_with_labels(
+        df, x='company', y='latest_close', title='Latest Close Prices', filename='close_prices_seaborn.png'
+    )
+    sentiment_counts = df['overall_sentiment'].value_counts().reset_index()
+    sentiment_counts.columns = ['Sentiment', 'Count']
+    visualization_agent.pie_chart_with_counts(
+        sentiment_counts, label_col='Sentiment', value_col='Count', title='Sentiment Distribution', filename='sentiment_pie_seaborn.png'
+    )
+
 async def main():
     supervisor = SupervisorAgent()
     supervisor.register_agent(MarketDataAgent())
@@ -99,7 +112,7 @@ async def main():
         {
             "agent_name": "MarketDataAgent",
             "task_type": "fetch_top_stocks",
-            "parameters": {"count": 10},
+            "parameters": {"count": 15},
             "priority": 1,
             "retries": 2
         },
@@ -121,6 +134,8 @@ async def main():
     ]
 
     await run_workflow(supervisor, workflow)
+
+visualization_agent = VisualizationAgent()
 
 if __name__ == "__main__":
     asyncio.run(main())
