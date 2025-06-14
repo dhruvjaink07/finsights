@@ -24,6 +24,13 @@ TICKER_TO_COMPANY = {
     "TITAN.NS": "Titan",
     "WIPRO.NS": "Wipro",
     "POWERGRID.NS": "Power Grid",
+    # Global
+    "AAPL": "Apple",
+    "GOOGL": "Google",
+    "MSFT": "Microsoft",
+    "TSLA": "Tesla",
+    "AMZN": "Amazon",
+    "META": "Meta",
     # Add more mappings as needed
 }
 
@@ -45,7 +52,7 @@ class SentimentAgent(BaseAgent):
         for symbol in symbols:
             # Use company name for news search, fallback to symbol if not mapped
             company = TICKER_TO_COMPANY.get(symbol, symbol)
-            articles = self.news_fetcher.get_news(company, 5)
+            articles = self.news_fetcher.get_news(company, 10)
             results = []
             for article in articles:
                 content = (article.get("title", "") or "") + " " + (article.get("description") or "")

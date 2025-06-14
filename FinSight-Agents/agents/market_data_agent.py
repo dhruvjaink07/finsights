@@ -22,8 +22,13 @@ class MarketDataAgent(BaseAgent):
             return AgentResult(success=False, data=None, error=str(e))
 
     async def _fetch_top_stocks(self, count: int):
-        # Example: fetch top N Indian stocks (customize as needed)
-        symbols = ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS"][:count]
+        # Add global and Indian stocks here
+        symbols = [
+            "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS",  # Indian
+            "AAPL", "GOOGL", "MSFT",                 # Global (US)
+            "TSLA", "AMZN", "META"                   # More US
+            # Add more as needed
+        ][:count]
         data = fetch_stock_data(symbols)
         return data
 
