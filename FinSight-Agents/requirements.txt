@@ -26,6 +26,7 @@ dash>=2.9  # If building interactive dashboards
 looker-sdk>=22.0  # If using Looker
 matlpotlib>=3.7  # For static plots
 seaborn>=0.12  # For statistical data visualization
+mplfinance
 
 # Development Utilities
 pytest>=7.3

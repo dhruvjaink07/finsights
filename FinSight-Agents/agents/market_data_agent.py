@@ -17,6 +17,9 @@ class MarketDataAgent(BaseAgent):
             if task_type == "fetch_top_stocks":
                 data = await self._fetch_top_stocks(params['count'])
                 return AgentResult(success=True, data=data)
+            elif task_type == "fetch_specific_stocks":
+                data = await self._fetch_specific_stocks(params['symbols'])
+                return AgentResult(success=True, data=data)
             # Add other task types...
         except Exception as e:
             return AgentResult(success=False, data=None, error=str(e))
@@ -27,8 +30,12 @@ class MarketDataAgent(BaseAgent):
             "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS",  # Indian
             "AAPL", "GOOGL", "MSFT",                 # Global (US)
             "TSLA", "AMZN", "META"                   # More US
-            # Add more as needed
         ][:count]
+        data = fetch_stock_data(symbols)
+        return data
+
+    async def _fetch_specific_stocks(self, symbols):
+        # symbols: list of tickers (e.g., ["AAPL", "TSLA"])
         data = fetch_stock_data(symbols)
         return data
 

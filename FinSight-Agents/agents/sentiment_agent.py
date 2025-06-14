@@ -1,38 +1,8 @@
 from core.agent_base import BaseAgent, AgentResult
 from utils.news_fetcher import NewsFetcherAdapter
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from utils.tickers_to_company import TICKER_TO_COMPANY
 
-# Mapping from ticker symbols to company names for news search
-TICKER_TO_COMPANY = {
-    "RELIANCE.NS": "Reliance",
-    "TCS.NS": "TCS",
-    "HDFCBANK.NS": "HDFC Bank",
-    "INFY.NS": "Infosys",
-    "ICICIBANK.NS": "ICICI Bank",
-    "SBIN.NS": "State Bank of India",
-    "BHARTIARTL.NS": "Bharti Airtel",
-    "ITC.NS": "ITC",
-    "LT.NS": "Larsen & Toubro",
-    "AXISBANK.NS": "Axis Bank",
-    "KOTAKBANK.NS": "Kotak Mahindra Bank",
-    "HINDUNILVR.NS": "Hindustan Unilever",
-    "BAJFINANCE.NS": "Bajaj Finance",
-    "ASIANPAINT.NS": "Asian Paints",
-    "MARUTI.NS": "Maruti Suzuki",
-    "SUNPHARMA.NS": "Sun Pharma",
-    "ULTRACEMCO.NS": "UltraTech Cement",
-    "TITAN.NS": "Titan",
-    "WIPRO.NS": "Wipro",
-    "POWERGRID.NS": "Power Grid",
-    # Global
-    "AAPL": "Apple",
-    "GOOGL": "Google",
-    "MSFT": "Microsoft",
-    "TSLA": "Tesla",
-    "AMZN": "Amazon",
-    "META": "Meta",
-    # Add more mappings as needed
-}
 
 class SentimentAgent(BaseAgent):
     def __init__(self, news_fetcher=None, sentiment_analyzer=None):
