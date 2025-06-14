@@ -91,7 +91,7 @@ FinSight-Agents/
 
 1. **Clone the repo and install dependencies**
     ```sh
-    git clone <repo-url>
+    git clone https://github.com/dhruvjaink07/finsights.git
     cd FinSight-Agents
     pip install -r requirements.txt
     ```
@@ -99,6 +99,7 @@ FinSight-Agents/
 2. **Set up your `.env` file**
     ```
     NEWSAPI_KEY=your_newsapi_key_here
+    GEMINI_API_KEY=your_gemini_key
     ```
 
 3. **(Optional) Fetch and save stock/news data**
