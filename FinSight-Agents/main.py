@@ -72,12 +72,21 @@ def print_sentiment_results(sentiment_data):
             print("-" * 40)
 
 def print_insight_results(insight_data):
-    insight_result = insight_data
     print("\n=== Insights ===")
-    for insight in insight_result:
+    for insight in insight_data:
         print(f"{insight['company']} ({insight['ticker']}):")
         print(f"  Latest Close: {insight['latest_close']}")
+        print(f"  Latest Open: {insight['latest_open']}")
+        if insight['price_change_pct'] is not None:
+            print(f"  Price Change: {insight['price_change_pct']:.2f}% ({insight['trend']})")
+        print(f"  Volume: {insight['volume']}")
         print(f"  Overall Sentiment: {insight['overall_sentiment']} (from {insight['headline_count']} headlines)")
+        print(f"  Recommendation: {insight['recommendation']}")
+        if insight['divergence_flag']:
+            print(f"  {insight['divergence_flag']}")
+        if insight['top_headline']:
+            print(f"  Top Headline: {insight['top_headline']}")
+        print(f"  Gemini Insight: {insight.get('llm_insight', '')}")
         print("-" * 40)
 
 async def main():
