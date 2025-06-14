@@ -22,7 +22,9 @@ def cache_gemini_insight(prompt, response=None):
 def get_gemini_insight(prompt: str) -> str:
     cached = cache_gemini_insight(prompt)
     if cached:
+        print("[Gemini] Loaded from cache.")
         return cached
+    print("[Gemini] Calling Gemini API...")
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found in environment variables.")
