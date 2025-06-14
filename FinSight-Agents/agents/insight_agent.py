@@ -1,5 +1,6 @@
 from core.agent_base import BaseAgent, AgentResult
 from utils.gemini_helpers import get_gemini_insight_async
+import asyncio
 
 TICKER_TO_COMPANY = {
     "RELIANCE.NS": "Reliance",
@@ -132,7 +133,9 @@ class InsightAgent(BaseAgent):
         # Asynchronous batch processing for Gemini insights
         if prompts:
             try:
-                llm_insights = await get_gemini_insight_async(prompts)
+                llm_insights = await asyncio.gather(
+                    *(get_gemini_insight_async(prompt) for prompt in prompts)
+                )
                 for i, insight in enumerate(llm_insights):
                     insight_meta[i]["llm_insight"] = insight
             except Exception as e:
