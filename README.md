@@ -14,7 +14,7 @@ FinSight Agents is a robust, extensible multi-agent system that automates financ
 - Dynamically extracting and passing ticker symbols between agents
 - Scoring real-time sentiment from financial news using company names
 - Synthesizing actionable insights for every stock, even if no news is found
-- Generating clear, company-wise summaries and (optionally) visualizations
+- Generating clear, company-wise summaries and visualizations (bar, pie, candlestick, and technical indicators)
 
 ---
 
@@ -32,11 +32,12 @@ In the fast-paced world of financial markets, extracting and synthesizing data-d
 | 📊 MarketDataAgent           | Fetches real-time stock prices (via yfinance) for any tickers        |
 | 🗞️ SentimentAgent            | Analyzes latest news sentiment using NewsAPI + VADER (or Gemini)     |
 | 📈 InsightAgent              | Aggregates market and sentiment data into per-stock insights         |
-| 📉 VisualizationAgent (Opt.) | Generates graphs using Plotly or Looker                              |
+| 📉 VisualizationAgent        | Generates graphs (bar, pie, candlestick, technical indicators)       |
 
 - **Dynamic symbol extraction:** The workflow automatically extracts tickers from market data and passes them to downstream agents.
 - **Global & Indian stock support:** Add or remove any tickers in one place; the pipeline adapts automatically.
 - **Graceful handling:** If no news is found for a stock, the system still generates an insight with "No news".
+- **Rich visualizations:** Candlestick charts with moving averages, Bollinger Bands, RSI, plus bar and pie charts for comparison.
 
 ---
 
@@ -48,7 +49,7 @@ In the fast-paced world of financial markets, extracting and synthesizing data-d
 - **yfinance** for market data
 - **NewsAPI** for news headlines
 - **VADER / NLTK** for sentiment analysis
-- **Plotly** for visualization
+- **mplfinance, seaborn, matplotlib** for visualization
 - **python-dotenv** for secrets management
 
 ---
@@ -74,7 +75,7 @@ FinSight-Agents/
 ├── utils/                       # Helper modules (BigQuery, yfinance, news, etc.)
 │
 ├── data/
-│   ├── processed/               # Output CSVs (e.g., stock_data.csv, news_sample.csv)
+│   ├── processed/               # Output CSVs and generated charts
 │   └── schemas/                 # BigQuery table schemas (JSON)
 │
 ├── notebooks/                   # Jupyter notebooks and scripts for testing
@@ -100,13 +101,13 @@ FinSight-Agents/
     NEWSAPI_KEY=your_newsapi_key_here
     ```
 
-3. **Fetch and save stock/news data**
+3. **(Optional) Fetch and save stock/news data**
     ```sh
     python notebooks/init_bigquery.py      # Fetches stock data, saves as CSV
     python notebooks/save_news_sample.py   # Fetches news, saves as CSV
     ```
 
-4. **Upload CSVs to BigQuery (Sandbox)**
+4. **(Optional) Upload CSVs to BigQuery (Sandbox)**
     - Go to [BigQuery Console](https://console.cloud.google.com/bigquery)
     - Create dataset/table if needed
     - Upload CSVs via the web UI
@@ -115,6 +116,29 @@ FinSight-Agents/
     ```sh
     python main.py
     ```
+
+---
+
+## 💬 Usage: Example Prompts
+
+When prompted, you can type natural language queries such as:
+
+- `Apple`
+- `Show me insights on Tata Motors`
+- `Apple and Microsoft`
+- `GOOGLE, Apple Latest insights`
+- `Insights on Tata Motors and Tesla`
+- `What’s happening with Tesla this week?`
+- `Should I buy or sell Apple?`
+- `exit` or `quit` to stop
+
+---
+
+## 🖼️ Output
+
+- **Text summaries**: Price, trend, volume, sentiment, news, and recommendations for each stock.
+- **Charts**: Bar and pie charts for comparison, candlestick charts with technical indicators (moving averages, Bollinger Bands, RSI) for each stock.
+- **All charts and outputs are saved in `data/processed/`**.
 
 ---
 
