@@ -6,62 +6,224 @@ from agents.supervisor_agent import SupervisorAgent
 from agents.market_data_agent import MarketDataAgent
 from agents.sentiment_agent import SentimentAgent
 from agents.insight_agent import InsightAgent
+from agents.visualization_agent import VisualizationAgent
 from utils.news_fetcher import NewsFetcherAdapter
 from utils.company_to_ticker import COMPANY_TO_TICKER
 from utils.gemini_helpers import get_gemini_insight
 import copy
 import dotenv
+import random
 dotenv.load_dotenv()
 
 # Page config
-st.set_page_config(page_title="FinSight Chat", page_icon="💬", layout="centered")
+st.set_page_config(page_title="FinSight Agent Chat", page_icon="💹", layout="centered")
 
-# Enhanced CSS styling for chat bubbles
+# Custom CSS for dark mode and card layout
 st.markdown("""
     <style>
-        .chat-bubble {
-            padding: 12px 15px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            width: fit-content;
-            max-width: 80%;
-            color: #333;
-            font-size: 14px;
-            line-height: 1.4;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        body, .stApp {
+            background-color: #111827 !important;
         }
-        .user {
-            background-color: #DCF8C6;
-            align-self: flex-end;
+        .main {
+            background-color: #111827 !important;
         }
-        .bot {
-            background-color: #F1F0F0;
-            align-self: flex-start;
+        .fin-header {
+            text-align: center;
+            margin-bottom: 32px;
         }
-        .chat-container {
+        .fin-title {
+            color: #fff;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
-        .highlight {
-            font-weight: bold;
-            color: #2c3e50;
+        .fin-search-box {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 24px auto;
+            display: flex;
+            gap: 0.5rem;
         }
-        .warning {
-            color: #e74c3c;
-            font-style: italic;
+        .fin-card {
+            background: #181f2a;
+            border-radius: 18px;
+            padding: 28px 32px 22px 32px;
+            margin-bottom: 24px;
+            color: #fff;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .fin-card-content {
+            flex: 1 1 300px;
+        }
+        .fin-card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+        .fin-card-ticker {
+            font-size: 1rem;
+            color: #a1a1aa;
+            margin-bottom: 0.7rem;
+        }
+        .fin-card-row {
+            display: flex;
+            gap: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .fin-card-label {
+            color: #a1a1aa;
+            font-size: 0.95rem;
+        }
+        .fin-card-value {
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+        .fin-card-sentiment {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 1.05rem;
+        }
+        .sentiment-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .sentiment-positive { background: #22c55e; }
+        .sentiment-neutral { background: #f59e42; }
+        .sentiment-negative { background: #ef4444; }
+        .fin-card-price {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: right;
+        }
+        .fin-card-change-pos { color: #22c55e; }
+        .fin-card-change-neg { color: #ef4444; }
+        .fin-card-action {
+            margin-top: 10px;
+            padding: 6px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            border: none;
+            display: inline-block;
+        }
+        .action-buy { background: #22c55e; color: #fff; }
+        .action-hold { background: #f59e42; color: #fff; }
+        .action-avoid { background: #ef4444; color: #fff; }
+        @media (max-width: 700px) {
+            .fin-card {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 8px 8px 12px 8px !important;
+                margin-bottom: 14px !important;
+                min-width: 0 !important;
+            }
+            .fin-card-content {
+                width: 100% !important;
+                margin-bottom: 6px !important;
+            }
+            .fin-card-title {
+                font-size: 1rem !important;
+                margin-bottom: 0.1rem !important;
+            }
+            .fin-card-ticker {
+                font-size: 0.85rem !important;
+                margin-bottom: 0.3rem !important;
+            }
+            .fin-card-label, .fin-card-value, .fin-card-sentiment {
+                font-size: 0.85rem !important;
+            }
+            .fin-card-row {
+                gap: 0.7rem !important;
+                margin-bottom: 0.1rem !important;
+            }
+            .fin-card-price {
+                font-size: 1.1rem !important;
+                text-align: left !important;
+                margin-top: 0 !important;
+                margin-bottom: 2px !important;
+            }
+            .fin-card-action, .fin-card-change-pos, .fin-card-change-neg {
+                text-align: left !important;
+                margin-top: 0 !important;
+                font-size: 0.92rem !important;
+            }
+            .fin-card > div:last-child {
+                width: 100% !important;
+                min-width: unset !important;
+                margin-top: 2px !important;
+            }
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state for messages
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# Add shimmer loading bar CSS
+bar_widths = [random.randint(65, 100) for _ in range(3)]
+st.markdown(f"""
+    <style>
+    .shimmer-wrapper {{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin: 0 0 32px 0;
+        gap: 12px;
+        padding-left: max(env(safe-area-inset-left), 0px);
+    }}
+    .shimmer-bar:nth-child(1) {{
+        width: 100%;
+        max-width: 500px;
+    }}
+    .shimmer-bar:nth-child(2) {{
+        width: 60%;
+        max-width: 500px;
+    }}
+    .shimmer-bar:nth-child(3) {{
+        width: 40%;
+        max-width: 500px;
+    }}
+    .shimmer-bar {{
+        height: 20px;
+        border-radius: 8px;
+        background: #232b3a;
+        position: relative;
+        overflow: hidden;
+        margin: 0;
+    }}
+    .shimmer-effect {{
+        position: absolute;
+        top: 0; left: 0; height: 100%; width: 100%;
+        background: linear-gradient(90deg, rgba(35,43,58,0) 0%, rgba(60,70,90,0.25) 50%, rgba(35,43,58,0) 100%);
+        animation: shimmer 1.2s infinite;
+    }}
+    @keyframes shimmer {{
+        0% {{ transform: translateX(-100%); }}
+        100% {{ transform: translateX(100%); }}
+    }}
+    </style>
+""", unsafe_allow_html=True)
 
-# Initialize agents
-supervisor = SupervisorAgent()
-supervisor.register_agent(MarketDataAgent())
-supervisor.register_agent(SentimentAgent(NewsFetcherAdapter()))
-supervisor.register_agent(InsightAgent(None, None))
+def shimmer_loader(num_bars=3):
+    bars = ""
+    for _ in range(num_bars):
+        bars += """
+        <div class="shimmer-bar">
+            <div class="shimmer-effect"></div>
+        </div>
+        """
+    return f'<div class="shimmer-wrapper">{bars}</div>'
+
+# --- Utility Functions ---
 
 def normalize_company_key(name):
     return name.replace(" ", "").upper()
@@ -79,10 +241,6 @@ def map_to_tickers(items):
                 tickers.append(normalized_company_map[norm_key])
     return tickers
 
-def parse_user_query(query):
-    items = re.split(r"[,\s]+", query.strip())
-    return [item.upper() for item in items if item]
-
 def extract_tickers_llm(query):
     prompt = (
         "Extract all stock tickers (e.g., AAPL, TSLA, RELIANCE.NS) or company names (e.g., Apple, Tesla, Reliance) "
@@ -94,45 +252,74 @@ def extract_tickers_llm(query):
     items = [item.strip().upper() for item in response.split(",") if item.strip()]
     return items
 
-def format_insight_results(insights):
-    if not insights:
-        return "No insights available."
-    
-    output = ""
-    if len(insights) == 1:
-        info = insights[0]
-        output += f"### {info['company']} ({info['ticker']})\n\n"
-        output += f"- **Latest Close**: {info['latest_close']}\n"
-        output += f"- **Open**: {info['latest_open']}\n"
-        output += f"- **Price Change**: {info['price_change_pct']:.2f}% ({info['trend']})\n"
-        output += f"- **Volume**: {info['volume']:,}\n"
-        output += f"- **Overall Sentiment**: {info['overall_sentiment']} (from {info['headline_count']} headlines)\n"
-        output += f"- **Recommendation**: {info['recommendation']}\n"
-        if info.get('divergence_flag'):
-            output += f"- **Divergence**: {info['divergence_flag']}\n"
-        output += f"- **Top Headline**: {info['top_headline']}\n"
-        output += f"- **Gemini Insight**: {info['llm_insight']}\n"
-        if info['volume'] < 1_000_000:
-            output += "- <span class='warning'>⚠️ Low trading volume, may be illiquid or volatile.</span>\n"
-        if abs(info['price_change_pct']) > 5:
-            output += "- <span class='warning'>⚠️ High price movement detected today.</span>\n"
-        if info.get('headlines'):
-            output += "\n**Top News Headlines**:\n"
-            for h in info['headlines'][:3]:
-                output += f"- {h['headline']} ({h['sentiment']}, score: {h['score']})\n"
+def get_sentiment_color(sentiment):
+    if sentiment.lower() == "positive":
+        return "sentiment-positive"
+    elif sentiment.lower() == "neutral":
+        return "sentiment-neutral"
     else:
-        output += "### Insights for Selected Stocks\n\n"
-        for info in insights:
-            output += f"\n**{info['company']} ({info['ticker']})**\n"
-            output += f"- Latest Close: {info['latest_close']}\n"
-            output += f"- Price Change: {info['price_change_pct']:.2f}% ({info['trend']})\n"
-            output += f"- Volume: {info['volume']:,}\n"
-            output += f"- Overall Sentiment: {info['overall_sentiment']}\n"
-            output += f"- Recommendation: {info['recommendation']}\n"
-            if info.get('divergence_flag'):
-                output += f"- Divergence: {info['divergence_flag']}\n"
-    
-    return output
+        return "sentiment-negative"
+
+def get_action_class(action):
+    if action.lower() == "buy":
+        return "action-buy"
+    elif action.lower() == "hold":
+        return "action-hold"
+    else:
+        return "action-avoid"
+
+def get_action_label(action):
+    if action.lower() == "buy":
+        return "Buy"
+    elif action.lower() == "hold":
+        return "Hold"
+    else:
+        return "Avoid"
+
+def format_card(info):
+    sentiment_class = get_sentiment_color(info['overall_sentiment'])
+    action_class = get_action_class(info['recommendation'])
+    action_label = get_action_label(info['recommendation'])
+    price_change = info['price_change_pct']
+    price_class = "fin-card-change-pos" if price_change >= 0 else "fin-card-change-neg"
+    price_change_str = f"+{price_change:.2f}%" if price_change >= 0 else f"{price_change:.2f}%"
+    volume_str = f"{info['volume']/1_000_000:.1f}M" if info['volume'] >= 1_000_000 else f"{info['volume']:,}"
+    return f"""
+    <div class="fin-card">
+        <div class="fin-card-content">
+            <div class="fin-card-title">{info['company']}</div>
+            <div class="fin-card-ticker">{info['ticker']}</div>
+            <div class="fin-card-row">
+                <div>
+                    <div class="fin-card-label">Volume</div>
+                    <div class="fin-card-value">{volume_str}</div>
+                </div>
+                <div>
+                    <div class="fin-card-label">Sentiment</div>
+                    <div class="fin-card-sentiment">
+                        <span class="sentiment-dot {sentiment_class}"></span>
+                        {info['overall_sentiment']}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="text-align:right;min-width:140px;">
+            <div class="fin-card-price">${info['latest_close']}</div>
+            <div class="{price_class}" style="font-size:1.1rem;">{price_change_str}</div>
+            <div>
+                <span class="fin-card-action {action_class}">{action_label}</span>
+            </div>
+        </div>
+    </div>
+    """
+
+def format_cards(insights):
+    if not insights:
+        return "<div style='color:#fff;'>No insights available.</div>"
+    cards = ""
+    for info in insights:
+        cards += format_card(info)
+    return cards
 
 async def run_workflow(supervisor, user_tickers):
     workflow = [
@@ -159,13 +346,11 @@ async def run_workflow(supervisor, user_tickers):
             "priority": 3
         }
     ]
-    
     results = {}
     for step in workflow:
         agent_name = step["agent_name"]
         task_type = step["task_type"]
         parameters = copy.deepcopy(step["parameters"])
-        
         for key, value in parameters.items():
             if isinstance(value, str) and value.startswith("{{") and value.endswith("}}"):
                 ref_agent = value[2:-2].split(".")[0]
@@ -179,7 +364,6 @@ async def run_workflow(supervisor, user_tickers):
                         parameters[key] = []
                 else:
                     parameters[key] = results[ref_agent].data if ref_agent in results else None
-        
         result = await supervisor.agents[agent_name].execute({
             "agent_name": agent_name,
             "task_type": task_type,
@@ -188,50 +372,98 @@ async def run_workflow(supervisor, user_tickers):
             "retries": step.get("retries", 0)
         })
         results[agent_name] = result
-    
-    return format_insight_results(results["InsightAgent"].data)
+    return results["InsightAgent"].data
 
-# Streamlit UI
-st.title("💹 FinSight Agent Chat")
+# --- Streamlit UI ---
 
-# Display chat history
-for msg in st.session_state.messages:
-    role = msg["role"]
-    content = msg["content"]
-    css_class = "user" if role == "user" else "bot"
-    st.markdown(f"""
-        <div class="chat-container">
-            <div class="chat-bubble {css_class}">
-                <strong>{'You' if role == 'user' else 'FinSight'}:</strong><br>{content}
-            </div>
+# Header
+st.markdown("""
+    <div class="fin-header">
+        <div class="fin-title">
+            <span style="font-size:1.7rem;">📈</span> FinSight Agent Chat
         </div>
-    """, unsafe_allow_html=True)
+    </div>
+""", unsafe_allow_html=True)
 
-# User input
-user_input = st.text_input("Enter company names or tickers (e.g., Apple, TSLA)", key="input")
+# Search box
+with st.form(key="fin_form"):
+    col1, col2 = st.columns([5,1])
+    with col1:
+        user_input = st.text_input(
+            "Enter company names or tickers (e.g., AAPL, MSFT, TSLA)",
+            key="input",
+            label_visibility="collapsed",
+            placeholder="Enter company names or tickers (e.g., AAPL, MSFT, TSLA)"
+        )
+    with col2:
+        submit = st.form_submit_button("🔎 Analyze", use_container_width=True)
 
-# Send button
-if st.button("Send", use_container_width=True) and user_input:
-    # Add user message to chat
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    
-    # Process query
+# Initialize agents
+supervisor = SupervisorAgent()
+supervisor.register_agent(MarketDataAgent())
+supervisor.register_agent(SentimentAgent(NewsFetcherAdapter()))
+supervisor.register_agent(InsightAgent(None, None))
+visualization_agent = VisualizationAgent()
+
+# Results area
+if submit and user_input:
     user_symbols_raw = extract_tickers_llm(user_input)
     user_tickers = map_to_tickers(user_symbols_raw)
-    
     if not user_tickers:
-        response = "Sorry, I couldn't find any valid stock tickers in your query."
+        st.warning("Sorry, I couldn't find any valid stock tickers in your query.")
     else:
-        # Run async workflow in Streamlit
+        # Show shimmer loader while processing
+        shimmer_placeholder = st.empty()
+        shimmer_placeholder.html(shimmer_loader(3))
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            response = loop.run_until_complete(run_workflow(supervisor, user_tickers))
+            insights = loop.run_until_complete(run_workflow(supervisor, user_tickers))
         finally:
             loop.close()
-    
-    # Add bot response to chat
-    st.session_state.messages.append({"role": "bot", "content": response})
-    
-    # Rerun to update UI
-    st.rerun()
+        shimmer_placeholder.empty()
+        st.markdown(format_cards(insights), unsafe_allow_html=True)
+
+        # --- Visualization Integration ---
+        import os
+
+        if insights:
+            if len(insights) == 1:
+                info = insights[0]
+                # 1. Sentiment Pie Chart
+                if info.get('headlines'):
+                    pie_path = os.path.join(visualization_agent.save_dir, f"{info['ticker']}_sentiment_pie.png")
+                    visualization_agent.sentiment_pie_chart(info['headlines'], info['company'], filename=f"{info['ticker']}_sentiment_pie.png")
+                    if os.path.exists(pie_path):
+                        st.image(pie_path, caption="Sentiment Distribution", use_container_width=True)
+                # 2. Sentiment Timeline
+                if info.get('headlines'):
+                    timeline_path = os.path.join(visualization_agent.save_dir, f"{info['ticker']}_sentiment_timeline.png")
+                    visualization_agent.sentiment_timeline(info['headlines'], info['company'], filename=f"{info['ticker']}_sentiment_timeline.png")
+                    if os.path.exists(timeline_path):
+                        st.image(timeline_path, caption="Sentiment Timeline", use_container_width=True)
+                # 3. Candlestick Chart
+                candle_path = os.path.join(visualization_agent.save_dir, f"{info['ticker']}_candlestick.png")
+                visualization_agent.candlestick_chart(info['ticker'], filename=f"{info['ticker']}_candlestick.png", period="5d")
+                if os.path.exists(candle_path):
+                    st.image(candle_path, caption="Candlestick Chart", use_container_width=True)
+            else:
+                # Multi-stock: Bar chart and pie chart
+                import pandas as pd
+                df = pd.DataFrame(insights)
+                bar_path = os.path.join(visualization_agent.save_dir, "close_prices_seaborn.png")
+                pie_path = os.path.join(visualization_agent.save_dir, "sentiment_pie_seaborn.png")
+                visualization_agent.bar_chart_with_labels(
+                    df, x='company', y='latest_close', title='Latest Close Prices', filename='close_prices_seaborn.png'
+                )
+                sentiment_counts = df['overall_sentiment'].value_counts().reset_index()
+                sentiment_counts.columns = ['Sentiment', 'Count']
+                visualization_agent.sentiment_pie_chart(
+                    [{'sentiment': row['Sentiment']} for _, row in sentiment_counts.iterrows()],
+                    company="All Selected Stocks",
+                    filename='sentiment_pie_seaborn.png'
+                )
+                if os.path.exists(bar_path):
+                    st.image(bar_path, caption="Latest Close Prices", use_container_width=True)
+                if os.path.exists(pie_path):
+                    st.image(pie_path, caption="Sentiment Distribution", use_container_width=True)
