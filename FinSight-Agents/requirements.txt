@@ -40,3 +40,6 @@ python-dotenv
 # Documentation
 mkdocs>=1.4
 mkdocs-material>=9.1
+
+#Frontend
+streamlit>=1.20  # For building web apps

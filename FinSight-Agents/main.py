@@ -10,6 +10,8 @@ import asyncio
 import copy
 import pandas as pd
 import re
+import dotenv
+dotenv.load_dotenv()
 
 
 

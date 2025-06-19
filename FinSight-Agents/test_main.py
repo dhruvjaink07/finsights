@@ -10,6 +10,8 @@ from utils.news_fetcher import NewsFetcherAdapter
 from utils.company_to_ticker import COMPANY_TO_TICKER
 from utils.gemini_helpers import get_gemini_insight
 import copy
+import dotenv
+dotenv.load_dotenv()
 
 # Page config
 st.set_page_config(page_title="FinSight Chat", page_icon="💬", layout="centered")
