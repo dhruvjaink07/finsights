@@ -13,12 +13,14 @@ from utils.gemini_helpers import get_gemini_insight
 import copy
 import dotenv
 import random
+import os
+
 dotenv.load_dotenv()
 
 # Page config
 st.set_page_config(page_title="FinSight Agent Chat", page_icon="💹", layout="centered")
 
-# Custom CSS for dark mode and card layout
+# Custom CSS (unchanged, included for completeness)
 st.markdown("""
     <style>
         body, .stApp {
@@ -164,10 +166,21 @@ st.markdown("""
                 margin-top: 2px !important;
             }
         }
+        .chat-history {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #374151;
+        }
+        .chat-query {
+            color: #a1a1aa;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# Add shimmer loading bar CSS
+# Shimmer loader CSS (unchanged)
 bar_widths = [random.randint(65, 100) for _ in range(3)]
 st.markdown(f"""
     <style>
@@ -223,7 +236,7 @@ def shimmer_loader(num_bars=3):
         """
     return f'<div class="shimmer-wrapper">{bars}</div>'
 
-# --- Utility Functions ---
+# --- Utility Functions (unchanged) ---
 
 def normalize_company_key(name):
     return name.replace(" ", "").upper()
@@ -374,6 +387,10 @@ async def run_workflow(supervisor, user_tickers):
         results[agent_name] = result
     return results["InsightAgent"].data
 
+# --- Initialize Session State for Chat History ---
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
+
 # --- Streamlit UI ---
 
 # Header
@@ -384,6 +401,12 @@ st.markdown("""
         </div>
     </div>
 """, unsafe_allow_html=True)
+
+# Clear History Button
+if st.session_state.chat_history:
+    if st.button("Clear Chat History", key="clear_history"):
+        st.session_state.chat_history = []
+        st.experimental_rerun()
 
 # Search box
 with st.form(key="fin_form"):
@@ -405,7 +428,7 @@ supervisor.register_agent(SentimentAgent(NewsFetcherAdapter()))
 supervisor.register_agent(InsightAgent(None, None))
 visualization_agent = VisualizationAgent()
 
-# Results area
+# Process new query
 if submit and user_input:
     user_symbols_raw = extract_tickers_llm(user_input)
     user_tickers = map_to_tickers(user_symbols_raw)
@@ -419,51 +442,65 @@ if submit and user_input:
         asyncio.set_event_loop(loop)
         try:
             insights = loop.run_until_complete(run_workflow(supervisor, user_tickers))
+            # Store visualization paths
+            visualization_paths = []
+            if insights:
+                if len(insights) == 1:
+                    info = insights[0]
+                    # Sentiment Pie Chart
+                    if info.get('headlines'):
+                        pie_path = os.path.join(visualization_agent.save_dir, f"{info['ticker']}_sentiment_pie.png")
+                        visualization_agent.sentiment_pie_chart(info['headlines'], info['company'], filename=f"{info['ticker']}_sentiment_pie.png")
+                        if os.path.exists(pie_path):
+                            visualization_paths.append(('Sentiment Distribution', pie_path))
+                    # Sentiment Timeline
+                    if info.get('headlines'):
+                        timeline_path = os.path.join(visualization_agent.save_dir, f"{info['ticker']}_sentiment_timeline.png")
+                        visualization_agent.sentiment_timeline(info['headlines'], info['company'], filename=f"{info['ticker']}_sentiment_timeline.png")
+                        if os.path.exists(timeline_path):
+                            visualization_paths.append(('Sentiment Timeline', timeline_path))
+                    # Candlestick Chart
+                    candle_path = os.path.join(visualization_agent.save_dir, f"{info['ticker']}_candlestick.png")
+                    visualization_agent.candlestick_chart(info['ticker'], filename=f"{info['ticker']}_candlestick.png", period="5d")
+                    if os.path.exists(candle_path):
+                        visualization_paths.append(('Candlestick Chart', candle_path))
+                else:
+                    # Multi-stock visualizations
+                    df = pd.DataFrame(insights)
+                    bar_path = os.path.join(visualization_agent.save_dir, "close_prices_seaborn.png")
+                    pie_path = os.path.join(visualization_agent.save_dir, "sentiment_pie_seaborn.png")
+                    visualization_agent.bar_chart_with_labels(
+                        df, x='company', y='latest_close', title='Latest Close Prices', filename='close_prices_seaborn.png'
+                    )
+                    sentiment_counts = df['overall_sentiment'].value_counts().reset_index()
+                    sentiment_counts.columns = ['Sentiment', 'Count']
+                    visualization_agent.sentiment_pie_chart(
+                        [{'sentiment': row['Sentiment']} for _, row in sentiment_counts.iterrows()],
+                        company="All Selected Stocks",
+                        filename='sentiment_pie_seaborn.png'
+                    )
+                    if os.path.exists(bar_path):
+                        visualization_paths.append(('Latest Close Prices', bar_path))
+                    if os.path.exists(pie_path):
+                        visualization_paths.append(('Sentiment Distribution', pie_path))
+            # Store in chat history
+            st.session_state.chat_history.append({
+                'query': user_input,
+                'insights': insights,
+                'visualization_paths': visualization_paths
+            })
         finally:
             loop.close()
         shimmer_placeholder.empty()
-        st.markdown(format_cards(insights), unsafe_allow_html=True)
 
-        # --- Visualization Integration ---
-        import os
-
-        if insights:
-            if len(insights) == 1:
-                info = insights[0]
-                # 1. Sentiment Pie Chart
-                if info.get('headlines'):
-                    pie_path = os.path.join(visualization_agent.save_dir, f"{info['ticker']}_sentiment_pie.png")
-                    visualization_agent.sentiment_pie_chart(info['headlines'], info['company'], filename=f"{info['ticker']}_sentiment_pie.png")
-                    if os.path.exists(pie_path):
-                        st.image(pie_path, caption="Sentiment Distribution", use_container_width=True)
-                # 2. Sentiment Timeline
-                if info.get('headlines'):
-                    timeline_path = os.path.join(visualization_agent.save_dir, f"{info['ticker']}_sentiment_timeline.png")
-                    visualization_agent.sentiment_timeline(info['headlines'], info['company'], filename=f"{info['ticker']}_sentiment_timeline.png")
-                    if os.path.exists(timeline_path):
-                        st.image(timeline_path, caption="Sentiment Timeline", use_container_width=True)
-                # 3. Candlestick Chart
-                candle_path = os.path.join(visualization_agent.save_dir, f"{info['ticker']}_candlestick.png")
-                visualization_agent.candlestick_chart(info['ticker'], filename=f"{info['ticker']}_candlestick.png", period="5d")
-                if os.path.exists(candle_path):
-                    st.image(candle_path, caption="Candlestick Chart", use_container_width=True)
-            else:
-                # Multi-stock: Bar chart and pie chart
-                import pandas as pd
-                df = pd.DataFrame(insights)
-                bar_path = os.path.join(visualization_agent.save_dir, "close_prices_seaborn.png")
-                pie_path = os.path.join(visualization_agent.save_dir, "sentiment_pie_seaborn.png")
-                visualization_agent.bar_chart_with_labels(
-                    df, x='company', y='latest_close', title='Latest Close Prices', filename='close_prices_seaborn.png'
-                )
-                sentiment_counts = df['overall_sentiment'].value_counts().reset_index()
-                sentiment_counts.columns = ['Sentiment', 'Count']
-                visualization_agent.sentiment_pie_chart(
-                    [{'sentiment': row['Sentiment']} for _, row in sentiment_counts.iterrows()],
-                    company="All Selected Stocks",
-                    filename='sentiment_pie_seaborn.png'
-                )
-                if os.path.exists(bar_path):
-                    st.image(bar_path, caption="Latest Close Prices", use_container_width=True)
-                if os.path.exists(pie_path):
-                    st.image(pie_path, caption="Sentiment Distribution", use_container_width=True)
+# Display Chat History
+if st.session_state.chat_history:
+    st.markdown('<div class="chat-history">', unsafe_allow_html=True)
+    # st.markdown("### Chat History")
+    for entry in reversed(st.session_state.chat_history):  # Show newest first
+        st.markdown(f'<div class="chat-query">Query: {entry["query"]}</div>', unsafe_allow_html=True)
+        st.markdown(format_cards(entry['insights']), unsafe_allow_html=True)
+        for caption, path in entry['visualization_paths']:
+            if os.path.exists(path):
+                st.image(path, caption=caption, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
