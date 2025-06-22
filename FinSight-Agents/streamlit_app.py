@@ -1,3 +1,4 @@
+import nltk
 import streamlit as st
 import asyncio
 import pandas as pd
@@ -14,7 +15,10 @@ import copy
 import dotenv
 import random
 import os
-
+try:
+    nltk.data.find('sentiment/vader_lexicon.zip')
+except LookupError:
+    nltk.download('vader_lexicon')
 dotenv.load_dotenv()
 
 # Page config
