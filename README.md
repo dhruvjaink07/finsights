@@ -18,6 +18,25 @@ FinSight Agents is a robust, extensible multi-agent system that automates financ
 
 ---
 
+## 🌐 Hosted Application
+
+**Try the app here:**  
+[https://fininsight-app.streamlit.app](https://fininsight-app.streamlit.app) <!-- Replace with your actual Streamlit Cloud link -->
+
+---
+
+## 📹 Demo Video
+
+[Watch the demo](#) <!-- Replace with your actual demo video link -->
+
+---
+
+## 📝 Blog
+
+[Read our project blog](https://medium.com/@khanfawaz1110/finsight-agents-building-a-smarter-financial-future-with-ai-and-multi-agent-systems-af1e8ad6c89e) <!-- Replace with your actual blog link -->
+
+---
+
 ## 🧩 Problem Statement
 
 In the fast-paced world of financial markets, extracting and synthesizing data-driven insights requires significant time and expertise. Investors and analysts often juggle data from multiple sources — prices, indicators, news, and reports — which slows down decision-making.
@@ -47,10 +66,12 @@ In the fast-paced world of financial markets, extracting and synthesizing data-d
 - **Agent Development Kit (ADK)** for agent orchestration
 - **Google Cloud BigQuery** (Sandbox, CSV upload)
 - **yfinance** for market data
+- **gemmini** for insights
 - **NewsAPI** for news headlines
 - **VADER / NLTK** for sentiment analysis
 - **mplfinance, seaborn, matplotlib** for visualization
 - **python-dotenv** for secrets management
+- **Streamlit** for the web interface
 
 ---
 
@@ -113,12 +134,15 @@ FinSight-Agents/
     - Create dataset/table if needed
     - Upload CSVs via the web UI
 
-5. **Run the agent workflow**
+5. **Run the agent workflow locally**
     ```sh
     python main.py
     ```
 
----
+6. **Run the Streamlit web app locally**
+    ```sh
+    streamlit run FinSight-Agents/streamlit_app.py
+    ```
 
 ## 💬 Usage: Example Prompts
 
@@ -163,24 +187,39 @@ When prompted, you can type natural language queries such as:
 
 ## 📅 Hackathon Timeline
 
-- **June 11–13:** MarketDataAgent, BigQuery integration, news fetcher, agent scaffolding
-- **June 14:** SentimentAgent (news + sentiment analysis)
-- **June 15+:** InsightAgent, visualization, error handling, demo, docs
+- ✅ **June 11–13:** MarketDataAgent, BigQuery integration, news fetcher, agent scaffolding
+- ✅ **June 14:** SentimentAgent (news + sentiment analysis)
+- ✅ **June 15+:** InsightAgent, visualization, error handling, demo, docs
+- ✅ **June 22:** Final deployment, documentation, and polish
 
 ---
 
-## 📈 Next Steps
+## 👥 Contributors
 
-- Enhance InsightAgent with more advanced analytics or recommendations
-- Integrate additional data sources or indicators
-- Add more visualizations and dashboards
-- Expand test coverage and polish documentation for demo/submission
-
----
-
-## 🙌 Team
-
-- Dhruv, Tanish, Fawaz, Tahab
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/dhruvjaink07">
+        <img src="https://avatars.githubusercontent.com/u/109206275?s=400&u=1aad5a6380159d4213ea9392afee9cc87981e444&v=4" width="80" alt="Dhruv Jain" style="border-radius: 50%;"/>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/FawazKhan1011">
+        <img src="https://avatars.githubusercontent.com/u/138883345?v=4" width="80" alt="Fawaz" style="border-radius: 50%;"/>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Tahabpoker">
+        <img src="https://avatars.githubusercontent.com/u/109217304?v=4" width="80" alt="Tahab" style="border-radius: 50%;"/>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Zxarthon">
+        <img src="https://avatars.githubusercontent.com/u/93969577?v=4" width="80" alt="Tanish" style="border-radius: 50%;"/>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ---
 
