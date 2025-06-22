@@ -406,7 +406,7 @@ st.markdown("""
 if st.session_state.chat_history:
     if st.button("Clear Chat History", key="clear_history"):
         st.session_state.chat_history = []
-        st.experimental_rerun()
+        st.rerun()
 
 # Search box
 with st.form(key="fin_form"):
